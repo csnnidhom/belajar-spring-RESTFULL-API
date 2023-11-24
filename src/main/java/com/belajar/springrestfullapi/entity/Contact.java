@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.boot.autoconfigure.amqp.RabbitConnectionDetails;
 
 import java.util.List;
 
@@ -35,6 +34,6 @@ public class Contact {
     private User user;
 
     @OneToMany(mappedBy = "contact")
-    private List<Adress> adresses;
+    private List<Address> adresses;
 
 }
