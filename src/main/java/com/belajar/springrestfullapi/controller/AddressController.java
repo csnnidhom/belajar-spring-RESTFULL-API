@@ -3,6 +3,7 @@ package com.belajar.springrestfullapi.controller;
 import com.belajar.springrestfullapi.entity.User;
 import com.belajar.springrestfullapi.model.AddressResponse;
 import com.belajar.springrestfullapi.model.CreateAddressRequest;
+import com.belajar.springrestfullapi.model.UpdateAddressRequest;
 import com.belajar.springrestfullapi.model.WebResponse;
 import com.belajar.springrestfullapi.service.AddressService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,23 @@ public class AddressController {
         return WebResponse.<AddressResponse>builder().data(addressResponse).build();
     }
 
-
+    @PutMapping(
+            path = "/api/contacts/{contactId}/addresses/{addressId}",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public WebResponse<AddressResponse> create(User user,
+                                               @RequestBody UpdateAddressRequest request,
+                                               @PathVariable("contactId") String contactId,
+                                               @PathVariable("addressId") String addressId
+    ){
+        request.setContactId(contactId);
+        request.setAddressId(addressId
+        );
+        AddressResponse addressResponse = addressService.update(user, request);
+        return WebResponse.<AddressResponse>builder()
+                .data(addressResponse)
+                .build();
+    }
 
 }

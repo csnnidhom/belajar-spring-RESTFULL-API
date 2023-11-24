@@ -3,16 +3,14 @@ package com.belajar.springrestfullapi.controller;
 import com.belajar.springrestfullapi.entity.Address;
 import com.belajar.springrestfullapi.entity.Contact;
 import com.belajar.springrestfullapi.entity.User;
-import com.belajar.springrestfullapi.model.AddressResponse;
-import com.belajar.springrestfullapi.model.ContactResponse;
-import com.belajar.springrestfullapi.model.CreateAddressRequest;
-import com.belajar.springrestfullapi.model.WebResponse;
+import com.belajar.springrestfullapi.model.*;
 import com.belajar.springrestfullapi.repository.AddressRepository;
 import com.belajar.springrestfullapi.repository.ContactRepository;
 import com.belajar.springrestfullapi.repository.UserRepository;
 import com.belajar.springrestfullapi.security.BCrypt;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hibernate.sql.Update;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -178,6 +176,72 @@ class AddressControllerTest {
             assertEquals(address.getCountry(), response.getData().getCountry());
             assertEquals(address.getPostalCode(), response.getData().getPostalCode());
 
+        });
+    }
+
+    @Test
+    void updateAddressBadRequest() throws Exception{
+        CreateAddressRequest request = new CreateAddressRequest();
+        request.setCountry("");
+
+        mockMvc.perform(
+                put("/api/contacts/test/addresses/test")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("X-API-TOKEN", "test")
+        ).andExpectAll(
+                status().isBadRequest()
+        ).andDo( result -> {
+            WebResponse< String > response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+            });
+
+            assertNotNull(response.getErrors());
+
+        });
+    }
+
+    @Test
+    void updateAddressSuccess() throws Exception{
+        Contact contact = contactRepository.findById("test").orElseThrow();
+
+        Address address = new Address();
+        address.setId("test");
+        address.setContact(contact);
+        address.setStreet("lama");
+        address.setCity("lama");
+        address.setProvince("lama");
+        address.setCountry("lama");
+        address.setPostalCode("456");
+        addressRepository.save(address);
+
+        UpdateAddressRequest request = new UpdateAddressRequest();
+        request.setStreet("jalan baru");
+        request.setCity("suroboyo");
+        request.setProvince("jatim");
+        request.setCountry("Indonesia");
+        request.setPostalCode("123");
+
+        mockMvc.perform(
+                put("/api/contacts/test/addresses/test")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("X-API-TOKEN", "test")
+        ).andExpectAll(
+                status().isOk()
+        ).andDo( result -> {
+            WebResponse<AddressResponse> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+            });
+
+            assertNull(response.getErrors());
+            assertEquals(request.getStreet(), response.getData().getStreet());
+            assertEquals(request.getCity(), response.getData().getCity());
+            assertEquals(request.getProvince(), response.getData().getProvince());
+            assertEquals(request.getCountry(), response.getData().getCountry());
+            assertEquals(request.getPostalCode(), response.getData().getPostalCode());
+
+            assertTrue(addressRepository.existsById(response.getData().getId()));
         });
     }
 
